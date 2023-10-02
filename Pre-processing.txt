@@ -1,0 +1,28 @@
+# Importing Pandas library and reading the csv file using pandas. 
+import pandas as pd
+df = pd.read_csv("mindfactory_updated.csv")
+
+# Data cleaning process, finding the null values and droping the features with above 20% null values.
+a = df.isnull().sum()
+b = a[(a>(0.20*len (df)))]
+df.head()
+df=df.drop(b.index,axis = 1)
+
+# Replacing the existing null values with most repeated values seperatly for integers and characters.
+a1 = df.select_dtypes(include=['object']).isnull().sum()
+for i in a1.index:
+	b1 = df[i].value_counts().index.tolist()
+	df[i] = df[i].fillna(b1[0])
+a2 = df.select_dtypes(include=['integer','float']).isnull().sum()
+b2 = a2[a2!=0].index 
+df.shape
+df = df.fillna(df[b2].mode().to_dict(orient='records')[0])
+
+# Comparing co-relation between target and other columns and dropping with less than 40%.
+target='price_eur'
+x = df.select_dtypes(include=['integer','float']).corr()[target].abs()
+print (x)  
+df=df.drop(x[x<0.4].index, axis=1)
+print (df.shape)
+# Saving the final output as csv file.
+df.to_csv('Laptopdataset_ppoutput',index=False)
